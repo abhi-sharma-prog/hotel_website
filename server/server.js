@@ -52,3 +52,7 @@ server.on("error", (err) => {
 
     console.error("Server start error:", err);
 });
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
