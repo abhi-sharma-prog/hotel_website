@@ -1,0 +1,21 @@
+{
+  "name": "restaurant-fullstack-mysql",
+  "version": "1.0.0",
+  "description": "Restaurant Full Stack App using Node.js and MySQL",
+  "main": "server/server.js",
+  "scripts": {
+    "compile": "node server/server.js",
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.18.2",
+    "mysql2": "^3.9.0",
+    "stripe": "^20.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

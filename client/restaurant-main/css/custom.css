@@ -1,0 +1,191 @@
+
+/** ADD YOUR AWESOME CODES HERE **/
+
+/* Subtle motion and polish across the website */
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmerSweep {
+    from {
+        background-position: -200% 0;
+    }
+    to {
+        background-position: 200% 0;
+    }
+}
+
+.all-page-title {
+    position: relative;
+    overflow: hidden;
+}
+
+.all-page-title::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.12) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmerSweep 7s linear infinite;
+    pointer-events: none;
+}
+
+.heading-title,
+.blog-box-inner,
+.gallery-single,
+.special-grid,
+.contact-box form,
+.customer-reviews-box .carousel-inner {
+    animation: fadeUp 0.8s ease both;
+}
+
+.special-grid,
+.gallery-single,
+.blog-box-inner,
+.gallery-menu-item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.special-grid:hover,
+.gallery-single:hover,
+.blog-box-inner:hover,
+.gallery-menu-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+}
+
+.gallery-single img,
+.gallery-menu-item img {
+    transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.gallery-single:hover img,
+.gallery-menu-item:hover img {
+    transform: scale(1.06);
+    filter: saturate(1.1);
+}
+
+.btn,
+.btn-common,
+.submit-button .btn {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.btn:hover,
+.btn-common:hover,
+.submit-button .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.gallery-menu-box {
+    background: linear-gradient(180deg, #fffef8 0%, #fff 100%);
+    padding-top: 40px;
+}
+
+.gallery-menu-item {
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid #f0f0f0;
+}
+
+.gallery-menu-item h4 {
+    font-size: 18px;
+    margin: 14px;
+    text-align: center;
+}
+
+/* 3D interaction layer */
+.special-grid,
+.blog-box-inner,
+.gallery-menu-item,
+.customer-reviews-box .carousel-item {
+    transform-style: preserve-3d;
+    perspective: 1200px;
+}
+
+.special-grid:hover,
+.blog-box-inner:hover,
+.gallery-menu-item:hover {
+    transform: translateY(-10px) rotateX(6deg) rotateY(-6deg);
+}
+
+.why-text,
+.blog-detail,
+.gallery-menu-item h4 {
+    transform: translateZ(12px);
+}
+
+/* Dark mode */
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode {
+    background: #121212;
+    color: #e8e8e8;
+}
+
+body.dark-mode .bg-light,
+body.dark-mode .navbar,
+body.dark-mode .contact-box,
+body.dark-mode .blog-box,
+body.dark-mode .gallery-box,
+body.dark-mode .menu-box,
+body.dark-mode .customer-reviews-box,
+body.dark-mode .footer-area,
+body.dark-mode .top-navbar {
+    background-color: #1a1a1a !important;
+    color: #e8e8e8 !important;
+}
+
+body.dark-mode .blog-box-inner,
+body.dark-mode .gallery-menu-item,
+body.dark-mode .form-control,
+body.dark-mode .custom-select,
+body.dark-mode .why-text {
+    background: #242424 !important;
+    color: #f0f0f0 !important;
+    border-color: #383838 !important;
+}
+
+body.dark-mode a,
+body.dark-mode p,
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode li,
+body.dark-mode span {
+    color: #f0f0f0 !important;
+}
+
+.theme-toggle-btn {
+    position: fixed;
+    right: 18px;
+    bottom: 85px;
+    z-index: 9999;
+    border: 0;
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: #d65106;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+}
+
+.theme-toggle-btn:hover {
+    transform: translateY(-2px);
+}

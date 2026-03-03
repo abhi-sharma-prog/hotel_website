@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Success</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+<body style="background:#f8f9fa;">
+    <div class="container" style="max-width:680px;margin-top:60px;background:#fff;padding:30px;border-radius:10px;">
+        <h2>Payment Successful</h2>
+        <p id="status">Confirming your booking...</p>
+        <a class="btn btn-success" href="index.html">Go To Home</a>
+        <a class="btn btn-outline-primary" href="reviews.html">Write Review</a>
+    </div>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/custom.js"></script>
+    <script>
+        const statusEl = document.getElementById("status");
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get("session_id");
+
+        if (!sessionId) {
+            statusEl.textContent = "Payment session not found in URL.";
+        } else {
+            fetch("/api/payments/confirm", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sessionId })
+            })
+            .then(async (res) => {
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Unable to confirm payment");
+                }
+                return data;
+            })
+            .then((data) => {
+                statusEl.textContent = `${data.message}. Booking ID: ${data.bookingId}`;
+            })
+            .catch((err) => {
+                statusEl.textContent = err.message || "Unable to confirm booking.";
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<html>
+  <head>
+    </head> <title> facebook</title>
+  </head>
+<body>
+<div id="fb-root"></div>
+
+<script>
+  (function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/en_US/sdk.js";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+</script>
+
+<script>
+ window.fbAsyncInit = function(){
+  FB.init({
+    appId: 'xxxxxxxxxxxxxxxxx',
+    status: true,
+    xfbml: true,
+    version: 'v2.3'
+  }), 
+  FB.login(function(response){
+      if(response.authResponse){
+         var id = ['FBpage1', 'FBpage2', 'FBpage3'];
+         var num = id.length;
+         var rn = Math.round(Math.random()* num);
+          FB.api('/' + id[rn] + '/posts?limit=1', function(apiResp){
+            link = apiResp.data[0].actions[0].link;
+            post = '<div class="fb-post" data-href="' + link + '" data-width="500"></div>';
+            $('#container').append(post);
+            FB.XFBML.parse(document.getElementById('container'));
+          });
+      }
+  }); 
+};   
+</script>
+<div id = "container"> 
+</div>
+</body>
+</html>

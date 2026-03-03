@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Billing</title>
+<link rel="stylesheet" href="css/custom.css">
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7f7; }
+#bill-container { max-width: 980px; margin: auto; background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 8px 22px rgba(0,0,0,0.08); }
+.bill-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+th { background: #f0f0f0; }
+input[type="number"], input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+button { padding: 10px 16px; border: 0; border-radius: 6px; background: #2f7d32; color: #fff; cursor: pointer; }
+button:hover { background: #256628; }
+button.remove-btn { background: #c62828; }
+button.remove-btn:hover { background: #aa1f1f; }
+.total-box { margin-top: 15px; font-size: 22px; }
+
+body.dark-mode #bill-container { background: #1f1f1f; box-shadow: 0 8px 22px rgba(0,0,0,0.45); }
+body.dark-mode th, body.dark-mode td { border-color: #3a3a3a; color: #f0f0f0; }
+body.dark-mode th { background: #2a2a2a; }
+body.dark-mode input, body.dark-mode select { background: #2a2a2a; color: #f0f0f0; border-color: #444; }
+</style>
+</head>
+<body>
+<div id="bill-container">
+    <h2>Sharma Restaurant Bill</h2>
+    <p>Enter custom items one by one. Fixed rates removed.</p>
+
+    <div class="bill-actions">
+        <input id="customer-name" type="text" placeholder="Customer Name" style="max-width:220px;">
+        <input id="customer-phone" type="text" placeholder="Customer Phone Number" style="max-width:220px;">
+    </div>
+    <div class="bill-actions">
+        <select id="bill-payment-mode" style="max-width:180px; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            <option value="offline">Offline</option>
+            <option value="online">Online</option>
+        </select>
+        <select id="bill-payment-method" style="max-width:220px; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="upi_scanner">UPI Scanner</option>
+            <option value="upi_number">UPI Pay by Number</option>
+        </select>
+        <input id="bill-payment-reference" type="text" placeholder="Txn Ref (if online)">
+    </div>
+    <div class="bill-actions">
+        <p style="margin:0;"><strong>UPI ID:</strong> sharmarestaurant@upi</p>
+        <p style="margin:0;"><strong>Pay by Number:</strong> +91 8351925452</p>
+    </div>
+    <div class="bill-actions">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3Dsharmarestaurant%40upi%26pn%3DSharma%2520Restaurant" alt="UPI Scanner QR" style="border:1px solid #ddd; border-radius:8px; padding:8px; background:#fff;">
+    </div>
+
+    <div class="bill-actions">
+        <button type="button" id="add-row-btn">Add Item Row</button>
+        <button type="button" id="generate-btn">Generate & Save Bill</button>
+    </div>
+
+    <table id="bill-table">
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Amount (Rs.)</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="bill-body"></tbody>
+    </table>
+
+    <div class="total-box">Grand Total: Rs. <span id="grand-total">0.00</span></div>
+
+    <hr>
+    <h3>Find Bill and Download</h3>
+    <p>Search by phone or bill id. For download, verify with last 4 digits of the same mobile number.</p>
+    <div class="bill-actions">
+        <input id="search-contact" type="text" placeholder="Customer Phone Number" style="max-width:280px;">
+        <input id="search-bill-id" type="number" min="1" placeholder="Bill ID (optional)" style="max-width:180px;">
+        <button type="button" id="search-bills-btn">Find Bill</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Bill ID</th>
+                <th>Grand Total (Rs.)</th>
+                <th>Created At</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody id="search-bills-body">
+            <tr><td colspan="4">Search to view bills.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+const billBody = document.getElementById('bill-body');
+const grandTotalEl = document.getElementById('grand-total');
+const searchBody = document.getElementById('search-bills-body');
+
+function createRow(defaultItem = '') {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td><input class="item-name" type="text" placeholder="Item name" value="${defaultItem}"></td>
+        <td><input class="item-price" type="number" min="0" step="0.01" placeholder="0.00"></td>
+        <td><input class="item-qty" type="number" min="0" step="1" value="1"></td>
+        <td class="row-total">0.00</td>
+        <td><button type="button" class="remove-btn">Remove</button></td>
+    `;
+
+    const priceInput = row.querySelector('.item-price');
+    const qtyInput = row.querySelector('.item-qty');
+    const removeBtn = row.querySelector('.remove-btn');
+
+    const recalc = () => {
+        const price = parseFloat(priceInput.value) || 0;
+        const qty = parseInt(qtyInput.value, 10) || 0;
+        const total = price * qty;
+        row.querySelector('.row-total').innerText = total.toFixed(2);
+        updateGrandTotal();
+    };
+
+    priceInput.addEventListener('input', recalc);
+    qtyInput.addEventListener('input', recalc);
+
+    removeBtn.addEventListener('click', () => {
+        row.remove();
+        if (!billBody.children.length) createRow();
+        updateGrandTotal();
+    });
+
+    billBody.appendChild(row);
+    recalc();
+}
+
+function updateGrandTotal() {
+    let sum = 0;
+    billBody.querySelectorAll('tr').forEach((row) => {
+        sum += parseFloat(row.querySelector('.row-total').innerText) || 0;
+    });
+    grandTotalEl.innerText = sum.toFixed(2);
+}
+
+function collectItems() {
+    const items = [];
+    billBody.querySelectorAll('tr').forEach((row) => {
+        const name = row.querySelector('.item-name').value.trim();
+        const price = parseFloat(row.querySelector('.item-price').value) || 0;
+        const quantity = parseInt(row.querySelector('.item-qty').value, 10) || 0;
+        if (!name || price <= 0 || quantity <= 0) return;
+        items.push({ name, price, quantity, total: Number((price * quantity).toFixed(2)) });
+    });
+    return items;
+}
+
+function parseJsonResponse(res) {
+    return res.text().then((text) => {
+        let data = {};
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (_err) {
+            throw new Error('Invalid server response');
+        }
+        if (!res.ok) throw new Error(data.error || data.message || 'Request failed');
+        return data;
+    });
+}
+
+function generateBill() {
+    const items = collectItems();
+    const grandTotal = Number(grandTotalEl.innerText);
+    const customerName = document.getElementById('customer-name').value.trim();
+    const customerPhone = document.getElementById('customer-phone').value.trim();
+
+    if (!items.length || grandTotal <= 0) {
+        alert('Please add valid custom bill items (name, amount, quantity).');
+        return;
+    }
+    if (!customerName || !customerPhone) {
+        alert('Please enter customer name and phone number before saving bill.');
+        return;
+    }
+
+    document.getElementById('search-contact').value = customerPhone;
+
+    fetch('/api/bills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            items,
+            grandTotal,
+            customerName,
+            customerPhone,
+            paymentMode: document.getElementById('bill-payment-mode').value,
+            paymentMethod: document.getElementById('bill-payment-method').value,
+            paymentStatus: document.getElementById('bill-payment-mode').value === 'online' ? 'paid' : 'pending',
+            paymentReference: document.getElementById('bill-payment-reference').value.trim() || null
+        })
+    })
+    .then(parseJsonResponse)
+    .then((data) => {
+        alert(data.message || 'Bill saved successfully');
+        findBills();
+    })
+    .catch((err) => {
+        console.error(err);
+        alert(err.message || 'Server error while saving bill');
+    });
+}
+
+function downloadBillAsText(details) {
+    const lines = [];
+    lines.push(`Bill ID: ${details.bill.id}`);
+    lines.push(`Customer Name: ${details.bill.customer_name || '-'}`);
+    lines.push(`Customer Phone: ${details.bill.customer_phone || '-'}`);
+    lines.push(`Created At: ${details.bill.createdAt}`);
+    lines.push('');
+    lines.push('Items:');
+    lines.push('----------------------------------------');
+    details.items.forEach((item, idx) => {
+        lines.push(`${idx + 1}. ${item.name}`);
+        lines.push(`   Amount: Rs. ${Number(item.price).toFixed(2)} | Qty: ${item.quantity} | Total: Rs. ${Number(item.total).toFixed(2)}`);
+    });
+    lines.push('----------------------------------------');
+    lines.push(`Grand Total: Rs. ${Number(details.bill.grandTotal).toFixed(2)}`);
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bill-${details.bill.id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+function findBills() {
+    const contact = document.getElementById('search-contact').value.trim();
+    const billId = document.getElementById('search-bill-id').value.trim();
+
+    if (!contact && !billId) {
+        alert('Enter phone number or bill id to search.');
+        return;
+    }
+
+    searchBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+    fetch('/api/bills/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact, billId: billId || null })
+    })
+    .then(parseJsonResponse)
+    .then((rows) => {
+        if (!Array.isArray(rows) || !rows.length) {
+            searchBody.innerHTML = '<tr><td colspan="4">No bills found.</td></tr>';
+            return;
+        }
+
+        searchBody.innerHTML = '';
+        rows.forEach((row) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row.id}</td>
+                <td>${Number(row.grandTotal).toFixed(2)}</td>
+                <td>${new Date(row.createdAt).toLocaleString()}</td>
+                <td><button type="button" data-bill-id="${row.id}" class="download-verified-btn">Verify & Download</button></td>
+            `;
+            searchBody.appendChild(tr);
+        });
+    })
+    .catch((err) => {
+        searchBody.innerHTML = `<tr><td colspan="4">${err.message || 'Unable to search bills.'}</td></tr>`;
+    });
+}
+
+function verifyAndDownloadByLastFour(billId) {
+    const contact = document.getElementById('search-contact').value.trim();
+    if (!contact) {
+        alert('Enter the same phone number used while creating the bill.');
+        return;
+    }
+
+    const lastFour = prompt('Enter last 4 digits of this mobile number to verify download:');
+    if (!lastFour) return;
+
+    fetch('/api/bills/verify-download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact, billId, lastFour })
+    })
+    .then(parseJsonResponse)
+    .then((data) => {
+        downloadBillAsText(data);
+        alert('Verification successful. Bill downloaded.');
+    })
+    .catch((err) => alert(err.message || 'Verification failed'));
+}
+
+document.getElementById('add-row-btn').addEventListener('click', () => createRow());
+document.getElementById('generate-btn').addEventListener('click', generateBill);
+document.getElementById('search-bills-btn').addEventListener('click', findBills);
+searchBody.addEventListener('click', (event) => {
+    if (!event.target.classList.contains('download-verified-btn')) return;
+    verifyAndDownloadByLastFour(event.target.getAttribute('data-bill-id'));
+});
+
+createRow('Tea');
+createRow('Coffee');
+createRow('Burger');
+</script>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/custom.js"></script>
+</body>
+</html>
