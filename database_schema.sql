@@ -1,7 +1,9 @@
-CREATE DATABASE restaurantDB;
-USE restaurantDB;
-
-
+/*CREATE DATABASE restaurantDB;
+USE restaurantDB;*/
+create database railway;
+use railway;
+show databases;
+show tables;
 CREATE TABLE bills (
     id INT AUTO_INCREMENT PRIMARY KEY,
     customer_name VARCHAR(255),
@@ -24,7 +26,6 @@ CREATE TABLE bill_items (
     total DECIMAL(10,2),
     FOREIGN KEY (bill_id) REFERENCES bills(id) ON DELETE CASCADE
 );
-
 CREATE TABLE bill_otp_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     bill_id INT NOT NULL,
@@ -86,7 +87,8 @@ CREATE TABLE feedback_messages (
 );
 SELECT * FROM feedback_messages;
 
-CREATE TABLE blog_posts (
+
+create TABLE blog_posts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
